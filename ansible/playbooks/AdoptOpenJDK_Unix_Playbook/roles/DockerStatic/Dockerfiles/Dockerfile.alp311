@@ -1,4 +1,4 @@
-FROM alpine:3.11
+FROM alpine:3.16
 
 # Install OpenJDK 8 from Alpine because AdoptOpenJDK is 16+, only (February, 2021).
 RUN apk --update add bash shadow openssh-server openssh-client unzip wget openjdk8 git curl make gcc perl xvfb \
