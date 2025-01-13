@@ -26,15 +26,6 @@
     - (ansible_distribution_major_version == "12")
   tags: SUSE_gcc48
 
-- name: Sed change gpgcheck for gcc repo on x86_64
-  replace:
-    path: /etc/zypp/repos.d/devel_gcc.repo
-    regexp: 'gpgcheck=1'
-    replace: "gpgcheck=0"
-  when:
-    - (ansible_distribution_major_version == "12" and ansible_architecture == "x86_64")
-  tags: SUSE_gcc48
-
 # Skipping ansible lint as shell module is required to use the --force-resolution option (lint error 305)
 - name: Install gcc48
   shell: zypper -n in --force-resolution gcc48
@@ -44,7 +35,7 @@
     - patch_update
     - skip_ansible_lint
 
-- name: zypper upgrade all packages
+- name: Run zypper upgrade all packages
   zypper: name='*' state=latest update_cache=yes
   tags: patch_update
 
@@ -106,8 +97,9 @@
 
 - name: Check if jdk-8 is already installed in the target location
   shell: ls -ld /usr/lib/jvm/jdk8* >/dev/null 2>&1
-  ignore_errors: yes
+  failed_when: false
   register: adoptopenjdk_installed
+  changed_when: false
   tags:
     - java8_SUSE
     - skip_ansible_lint
@@ -124,6 +116,7 @@
   shell: set -o pipefail | ls -ld /usr/lib/jvm/jdk8* 2>/dev/null | awk '{print $9}'
   register: adoptopenjdk_dir
   when: adoptopenjdk_installed.rc != 0
+  changed_when: false
   tags: java8_SUSE
 
 - name: Chown /usr/lib/jvm/jdk8*
@@ -152,7 +145,7 @@
     dest: /tmp/
     mode: 0440
     timeout: 25
-    validate_certs: no
+    validate_certs: yes
     checksum: sha256:d9dc32efba7e74f788fcc4f212a43216fc37cf5f23f4c2339664d473353aedf6
   when:
     - (ansible_distribution_major_version == "12" and ansible_architecture == "x86_64")

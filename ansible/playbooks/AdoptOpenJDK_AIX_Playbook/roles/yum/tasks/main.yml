@@ -37,6 +37,9 @@
 # new python installed via yum. During the second pass this block is skipped.
 ##############################################################################
 - name: "Install yum bundle from AIXToolbox (block #1)"
+  when: _yum.stat.islnk is not defined
+  tags:
+    - yum
   block:
     - name: Ensure dest exists
       file:
@@ -47,7 +50,7 @@
       get_url:
         url: "{{ item }}"
         mode: 0644
-        validate_certs: false
+        validate_certs: true
         dest: /tmp/yum
       with_items:
         "{{ yum_downloads }}"
@@ -67,16 +70,13 @@
     - name: Unpack yum bundle
       command:
         cmd: /usr/bin/tar -xf /tmp/yum/yum_bundle.tar -C /tmp/yum
-        # Neither zip nor gtar is not available, disable warning about unpack:
-        warn: false
 
     - name: Install yum bundle
       command: rpm -i /tmp/yum/*.rpm
-  when: _yum.stat.islnk is not defined
-  tags:
-    - yum
 
 - name: "Update yum installation (Block #2)"
+  tags:
+    - yum
   block:
     - name: Remove /tmp/yum, if present
       file:
@@ -100,8 +100,6 @@
 
     - name: Ensure AIX_Toolbox_71 repo is enabled
       shell: yum-config-manager --enable AIX_Toolbox_71
-  tags:
-    - yum
 
 ##############################################################################
 # YUM AIXToolbox integration is installed
@@ -125,6 +123,7 @@
     - fontconfig-devel
     - gawk
     - git
+    - gnupg2-2.0.30
     - grep
     - libffi-devel
     - make
@@ -186,7 +185,7 @@
     - yum
 
 # Create zlib.h and zconf.h links - See https://github.com/adoptium/infrastructure/issues/1952
-- name: copy zlib.h and zconf.h (See https://github.com/adoptium/infrastructure/issues/1952)
+- name: Copy zlib.h and zconf.h (See https://github.com/adoptium/infrastructure/issues/1952)
   copy:
     src: "/opt/freeware/include/{{ item }}"
     dest: "/usr/include/"
@@ -252,3 +251,10 @@
   tags:
     - yum
     - adoptopenjdk
+
+# See https://github.com/adoptium/infrastructure/pull/3020#discussion_r1162721897 for why link is necessary
+- name: Link /usr/bin/gpg2 to /usr/bin/gpg
+  file:
+    src: /usr/bin/gpg2
+    dest: /usr/bin/gpg
+    state: link
