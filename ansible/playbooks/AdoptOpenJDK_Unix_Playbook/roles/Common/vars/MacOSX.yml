@@ -7,8 +7,9 @@
 
 Build_Tool_Packages:
   - autoconf
-  - cmake # OpenJ9
+  - automake # for compiling freetype on JDK8u
   - coreutils
+  - git
   - gnupg
   - gnu-sed
   - gnu-tar
@@ -20,12 +21,12 @@ Build_Tool_Packages_NOT_10_12:
   - ccache # ccache is no longer working on macOS 10.12
 
 Build_Tool_Casks:
-  - adoptopenjdk10
   - packages
 
 Test_Tool_Packages:
   - mercurial
   - pulseaudio
+  - jq
 
 JCK_Tool_Casks:
   - blackhole-2ch # Used to emulate a line in feed for JCK tests

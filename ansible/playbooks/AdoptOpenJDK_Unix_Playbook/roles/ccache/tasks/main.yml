@@ -9,13 +9,13 @@
 
 - name: Check if ccache is already installed
   shell: ccache --version >/dev/null
-  ignore_errors: yes
+  failed_when: false
   register: ccache_status
+  changed_when: false
   tags: ccache
 
 - name: Download ccache.tar.gz
   command: wget -O /tmp/ccache.tar.gz https://github.com/ccache/ccache/releases/download/v{{ ccacheVersion }}/ccache-{{ ccacheVersion }}.tar.gz
-    warn=False
   when: ccache_status.rc != 0
   tags: ccache
 
@@ -48,5 +48,5 @@
   with_items:
     - /tmp/ccache.tar.gz
     - /tmp/ccache-{{ ccacheVersion }}
-  ignore_errors: yes
+  failed_when: false
   tags: ccache

@@ -13,17 +13,22 @@ on:
     branches:         
     - master
 
+permissions:
+  contents: read
 
 jobs:
   yamllint:
+    permissions:
+      contents: read  # for actions/checkout to fetch code
+      pull-requests: write  # for karancode/yamllint-github-action to post comments on PRs
     name: Yamllint
     runs-on: ubuntu-latest
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: 'Yamllint'
-      uses: karancode/yamllint-github-action@master
+      uses: karancode/yamllint-github-action@4052d365f09b8d34eb552c363d1141fd60e2aeb2 # v3.0.0
       with:
         yamllint_comment: true
       env:
@@ -34,10 +39,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Set up Python 3.x
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
       with:
         python-version: '3.x'
 
@@ -51,7 +56,7 @@ jobs:
 
         cd ansible
         # Check that the inventory is valid
-        ansible-inventory --host build-marist-rhel77-s390x-1
+        ansible-inventory --host build-marist-rhel79-s390x-1
 
         # Check Playbook syntax.
         ansible-playbook playbooks/AdoptOpenJDK_Unix_Playbook/main.yml --syntax-check
@@ -59,6 +64,5 @@ jobs:
         ansible-playbook playbooks/AdoptOpenJDK_AIX_Playbook/main.yml --syntax-check
         ansible-playbook playbooks/AdoptOpenJDK_Windows_Playbook/main.yml --syntax-check
         ansible-playbook playbooks/AdoptOpenJDK_Unix_Playbook/ubuntu-jckservices.yml --syntax-check
-        ansible-playbook playbooks/AdoptOpenJDK_ITW_Playbook/main.yml --syntax-check
         ansible-playbook playbooks/vagrant.yml --syntax-check
         ansible-playbook playbooks/ubuntu-jck.yml --syntax-check

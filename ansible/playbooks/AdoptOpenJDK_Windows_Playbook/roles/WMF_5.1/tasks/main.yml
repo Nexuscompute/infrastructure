@@ -8,6 +8,7 @@
   args:
     executable: powershell
   register: powershell_output
+  changed_when: false
   tags: WMF
 
 - name: Get WMF 5.1 Packages
@@ -34,4 +35,4 @@
   when:
     - (powershell_output.stdout < '5')
     - hotfix_install.reboot_required
-  tags: WMF
+  tags: WMF,reboot

@@ -1,0 +1,53 @@
+name: QEMU Playbook Checker
+
+on:
+  pull_request:
+    paths:
+    - .github/workflows/build_qemu.yml
+    - ansible/playbooks/AdoptOpenJDK_Unix_Playbook/**
+    branches:       
+    - master
+    types: [ labeled ]
+
+permissions:
+  contents: read
+
+jobs:
+  build_job:
+    if: ${{ github.event.label.name == 'QEMU-playbook-check' }}
+    # The host should always be linux
+    runs-on: ubuntu-latest
+    name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
+
+    strategy:
+      matrix:
+        include:
+          - arch: aarch64
+            distro: ubuntu18.04
+          - arch: aarch64
+            distro: buster
+          - arch: ppc64le
+            distro: ubuntu18.04
+          - arch: s390x
+            distro: ubuntu18.04
+          - arch: riscv64
+            distro: ubuntu20.04
+          # - arch: armv7
+          #   distro: jessie
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Run on architecture
+        uses: uraimo/run-on-arch-action@5397f9e30a9b62422f302092631c99ae1effcd9e # v2.8.1
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.distro }}
+          run: |
+            apt -y update
+            apt -y install ansible sudo
+            echo "localhost ansible_user=runner ansible_connection=local" > ansible/hosts
+            set -eux
+            cd ansible
+            if [ ! -e /usr/bin/python ] ; then ln -s /usr/bin/python3 /usr/bin/python ; fi
+            sudo ansible-playbook -i hosts --extra-vars 'git_sha=${{ github.sha }}' playbooks/AdoptOpenJDK_Unix_Playbook/main.yml --skip-tags="debug,jenkins,docker,ntp_time,swap_file,adoptopenjdk,jenkins"
